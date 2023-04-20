@@ -1,0 +1,32 @@
+FROM --platform=amd64 node:lts-buster
+
+# 종속성 설치
+RUN apt-get update && apt-get install -y \
+    locales tzdata git vim && \
+    apt-get clean
+
+# 언어 설정
+RUN localedef -i ko_KR -c -f UTF-8 -A /usr/share/locale/locale.alias ko_KR.UTF-8
+RUN locale -a | grep ko
+
+RUN echo "export LC_ALL='ko_KR.utf8'" >> /etc/profile && \
+    echo "export LANG='ko_KR.utf8'" >> /etc/profile && \
+    echo "export LANGUAGE='ko_KR.utf8'" >> /etc/profile
+ENV LANG ko_KR.utf8
+
+RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+RUN echo "Asia/Seoul" > /etc/timezone
+ENV TZ Asia/Seoul
+
+# 파일 복사
+COPY . /app
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+RUN yarn --frozen-lockfile
+
+# 포트 설정
+EXPOSE 3000
+
+ENTRYPOINT [ "yarn", "start" ]
